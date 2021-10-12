@@ -3,9 +3,15 @@ package xtime
 import "time"
 
 const (
-	datetimeFormat   = "2006-01-02 15:04:05"
-	datetimeMsFormat = "2006-01-02 15:04:05.999"
-	datetimeNsFormat = "2006-01-02 15:04:05.999999999"
+	DateFormat       = "2006-01-02"
+	DatetimeFormat   = "2006-01-02 15:04:05"
+	DatetimeMsFormat = "2006-01-02 15:04:05.999"
+	DatetimeNsFormat = "2006-01-02 15:04:05.999999999"
+)
+
+var (
+	UTCLoc     = time.UTC                        // utc location
+	BeijingLoc = time.FixedZone("UTC+8", 8*3600) // beijing location
 )
 
 // NowUnix now timestamp (second)
@@ -23,19 +29,24 @@ func NowUnixNs() int64 {
 	return time.Now().UnixNano()
 }
 
+// NowDateStr now date string
+func NowDateStr() string {
+	return time.Now().Format(DateFormat)
+}
+
 // NowDatetimeStr now datetime string
 func NowDatetimeStr() string {
-	return time.Now().Format(datetimeFormat)
+	return time.Now().Format(DatetimeFormat)
 }
 
 // NowDatetimeMsStr now datetime string (millisecond)
 func NowDatetimeMsStr() string {
-	return time.Now().Format(datetimeMsFormat)
+	return time.Now().Format(DatetimeMsFormat)
 }
 
 // NowDatetimeNsStr now datetime string (nanosecond)
 func NowDatetimeNsStr() string {
-	return time.Now().Format(datetimeNsFormat)
+	return time.Now().Format(DatetimeNsFormat)
 }
 
 // BeginOfYear begin of year
@@ -103,4 +114,74 @@ func BeginOfMinute() time.Time {
 // EndOfMinute end of minute
 func EndOfMinute() time.Time {
 	return BeginOfMinute().Add(time.Minute).Add(-time.Nanosecond)
+}
+
+// UnixToTime convert timestamp (second) to time.Time
+func UnixToTime(sec int64) time.Time {
+	return time.Unix(sec, 0)
+}
+
+// UnixMsToTime convert timestamp (millisecond) to time.Time
+func UnixMsToTime(msec int64) time.Time {
+	return time.Unix(0, msec*1e6)
+}
+
+// UnixNsToTime convert timestamp (nanosecond) to time.Time
+func UnixNsToTime(nsec int64) time.Time {
+	return time.Unix(0, nsec)
+}
+
+// TimeToUnix convert time.Time to timestamp (second)
+func TimeToUnix(t time.Time) int64 {
+	return t.Unix()
+}
+
+// TimeToUnixMs convert time.Time to timestamp (millisecond)
+func TimeToUnixMs(t time.Time) int64 {
+	return t.UnixNano() / 1e6
+}
+
+// TimeToUnixNs convert time.Time to timestamp (nanosecond)
+func TimeToUnixNs(t time.Time) int64 {
+	return t.UnixNano()
+}
+
+// TimeToDateStr convert time.Time to date string
+func TimeToDateStr(t time.Time) string {
+	return t.Format(DateFormat)
+}
+
+// DateStrToTime convert date string to time.Time
+func DateStrToTime(val string) (time.Time, error) {
+	return time.Parse(DateFormat, val)
+}
+
+// DatetimeStrToTime convert datetime string (millisecond) to time.Time
+func DatetimeStrToTime(val string) (time.Time, error) {
+	return time.Parse(DatetimeFormat, val)
+}
+
+// DatetimeMsStrToTime convert datetime string (nanosecond) to time.Time
+func DatetimeMsStrToTime(val string) (time.Time, error) {
+	return time.Parse(DatetimeMsFormat, val)
+}
+
+// DatetimeNsStrToTime convert datetime string to time.Time
+func DatetimeNsStrToTime(val string) (time.Time, error) {
+	return time.Parse(DatetimeNsFormat, val)
+}
+
+// TimeToDatetimeStr convert time.Time to datetime string
+func TimeToDatetimeStr(t time.Time) string {
+	return t.Format(DatetimeFormat)
+}
+
+// TimeToDatetimeMsStr convert time.Time to datetime string (millisecond)
+func TimeToDatetimeMsStr(t time.Time) string {
+	return t.Format(DatetimeMsFormat)
+}
+
+// TimeToDatetimeNsStr convert time.Time to datetime string (nanosecond)
+func TimeToDatetimeNsStr(t time.Time) string {
+	return t.Format(DatetimeNsFormat)
 }
