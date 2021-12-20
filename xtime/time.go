@@ -1,6 +1,9 @@
 package xtime
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const (
 	DateFormat       = "2006-01-02"
@@ -184,4 +187,17 @@ func TimeToDatetimeMsStr(t time.Time) string {
 // TimeToDatetimeNsStr convert time.Time to datetime string (nanosecond)
 func TimeToDatetimeNsStr(t time.Time) string {
 	return t.Format(DatetimeNsFormat)
+}
+
+// print func exec time cost
+// 打印耗时日志
+func PrintTimeCost(prefix ...string) func() {
+	start := time.Now()
+	prefixStr := ""
+	if len(prefix) > 0 {
+		prefixStr = prefix[0]
+	}
+	return func() {
+		fmt.Printf("%s time cost: %v\n", prefixStr, time.Since(start))
+	}
 }
