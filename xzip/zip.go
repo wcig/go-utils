@@ -206,6 +206,11 @@ func ZipFiles(dst string, files []string) (err error) {
 	return nil
 }
 
+// 压缩单个文件
+func ZipFile(dst string, filename string) (err error) {
+	return ZipFiles(dst, []string{filename})
+}
+
 // 解压文件 (如果dstDir为空则解压至当前目录)
 func Unzip(dstDir, srcFile string) (err error) {
 	// 校验
