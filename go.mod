@@ -1,4 +1,4 @@
-module go-utils
+module github.com/wcig/go-utils
 
 go 1.13
 
