@@ -1,10 +1,10 @@
 package xmd5
 
 import (
-	"go-utils/xtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wcig/go-utils/xtime"
 )
 
 func TestByteSliceMD5(t *testing.T) {
