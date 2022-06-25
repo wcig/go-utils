@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHead(t *testing.T) {
+func TestTail(t *testing.T) {
 	// prepare
 	fn := "tmp.txt"
 	f, err := os.Create(fn)
@@ -29,23 +29,33 @@ func TestHead(t *testing.T) {
 
 	// test
 	{
-		result, err := Head(fn, 10)
+		result, err := Tail(fn, 1)
+		assert.Nil(t, err)
+		assert.Equal(t, []string{lines[2]}, result)
+	}
+	{
+		result, err := Tail(fn, 3)
 		assert.Nil(t, err)
 		assert.Equal(t, lines, result)
 	}
 	{
-		result, err := Head(fn, 0)
+		result, err := Tail(fn, 10)
+		assert.Nil(t, err)
+		assert.Equal(t, lines, result)
+	}
+	{
+		result, err := Tail(fn, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(result))
 	}
 	{
-		result, err := Head(fn+"tom", 10)
+		result, err := Tail(fn+"tom", 10)
 		assert.True(t, os.IsNotExist(err))
 		assert.Equal(t, 0, len(result))
 	}
 }
 
-func TestHeadBytes(t *testing.T) {
+func TestTailBytes(t *testing.T) {
 	// prepare
 	fn := "tmp.txt"
 	f, err := os.Create(fn)
@@ -66,27 +76,27 @@ func TestHeadBytes(t *testing.T) {
 
 	// test
 	{
-		result, err := HeadBytes(fn, 30)
+		result, err := TailBytes(fn, 30)
 		assert.Nil(t, err)
-		assert.Equal(t, []byte(strings.Join(lines, "\n")+"\n"), result)
+		assert.Equal(t, []byte(strings.Join(lines, "\n")), result)
 	}
 	{
-		result, err := HeadBytes(fn, 6)
+		result, err := TailBytes(fn, 6)
 		assert.Nil(t, err)
-		assert.Equal(t, []byte("line-1"), result)
+		assert.Equal(t, []byte("line-3"), result)
 	}
 	{
-		result, err := HeadBytes(fn, 7)
+		result, err := TailBytes(fn, 7)
 		assert.Nil(t, err)
-		assert.Equal(t, []byte("line-1\n"), result)
+		assert.Equal(t, []byte("\nline-3"), result)
 	}
 	{
-		result, err := HeadBytes(fn, 0)
+		result, err := TailBytes(fn, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(result))
 	}
 	{
-		result, err := HeadBytes(fn+"tom", 6)
+		result, err := TailBytes(fn+"tom", 6)
 		assert.True(t, os.IsNotExist(err))
 		assert.Equal(t, 0, len(result))
 	}
