@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 var (
@@ -111,4 +112,69 @@ func IntToStr(n int) string {
 // int64 -> str
 func Int64ToStr(n int64) string {
 	return strconv.FormatInt(n, 10)
+}
+
+// count of bytes
+func ByteCount(s string) int {
+	return len(s)
+}
+
+// count of runes
+func RuneCount(s string) int {
+	return utf8.RuneCountInString(s)
+}
+
+// rune sub string with begin index and length
+func RuneSub(s string, beginIndex int, length int) string {
+	if beginIndex < 0 {
+		return ""
+	}
+	count := RuneCount(s)
+	if beginIndex >= count {
+		return ""
+	}
+	return RuneSubString(s, beginIndex, beginIndex+length)
+}
+
+// rune sub left string
+func RuneSubLeft(s string, length int) string {
+	if length <= 0 {
+		return ""
+	}
+	return RuneSubString(s, 0, length)
+}
+
+// rune sub right string
+func RuneSubRight(s string, length int) string {
+	if length <= 0 {
+		return ""
+	}
+	count := RuneCount(s)
+	if length >= count {
+		return s
+	}
+	return RuneSubString(s, count-length, count)
+}
+
+// rune sub string with begin index and end index
+func RuneSubString(s string, beginIndex, endIndex int) string {
+	if beginIndex < 0 || beginIndex > endIndex {
+		return ""
+	}
+	var (
+		n = 0
+		x = 0
+		y = len(s)
+	)
+	for i := range s {
+		if n == beginIndex {
+			x = i
+		}
+		if n == endIndex {
+			y = i
+			break
+		}
+		n++
+	}
+	return s[x:y]
 }
