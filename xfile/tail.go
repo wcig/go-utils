@@ -95,24 +95,12 @@ func TailV2WithBuf(filename string, n int, bufSize int) (lines []string, err err
 		_ = f.Close()
 	}()
 
-	isLastByteLineBreak := false
 	offsetEnd, err := f.Seek(0, io.SeekEnd)
 	if err != nil {
 		return nil, err
 	}
 	if offsetEnd == 0 {
 		return nil, nil
-	}
-	if offsetEnd > 0 {
-		tmp := make([]byte, 1)
-		num, err := f.ReadAt(tmp, offsetEnd-1)
-		if err != nil {
-			return nil, err
-		}
-		if num > 0 && tmp[0] == '\n' {
-			isLastByteLineBreak = true
-			offsetEnd--
-		}
 	}
 
 	var (
@@ -129,22 +117,29 @@ func TailV2WithBuf(filename string, n int, bufSize int) (lines []string, err err
 			buf = make([]byte, offset)
 			offset = 0
 		}
-
 		_, err = f.ReadAt(buf, offset)
 		if err != nil {
 			return nil, err
 		}
 
+		isFirstByteLineBreak := (int64(len(buf))+offset == offsetEnd) && buf[len(buf)-1] == '\n'
 		for {
 			index := bytes.LastIndexByte(buf, '\n')
 			if index >= 0 {
+				if isFirstByteLineBreak {
+					buf = buf[:len(buf)-1]
+					lineBytes = []byte{'\n'}
+					index = bytes.LastIndexByte(buf, '\n')
+				}
+				isFirstByteLineBreak = false
+
 				tmp := make([]byte, len(buf)-index)
 				copy(tmp, buf[index:])
 				lineBytes = append(tmp, lineBytes...)
 				buf = buf[:index]
 
 				lines = append(lines, string(lineBytes[1:]))
-				lineBytes = []byte{}
+				lineBytes = []byte{'\n'}
 				lineNum++
 				if lineNum >= n {
 					break
@@ -155,18 +150,13 @@ func TailV2WithBuf(filename string, n int, bufSize int) (lines []string, err err
 			}
 		}
 
-		if offset <= 0 && len(lineBytes) > 0 {
+		if lineNum < n && offset == 0 && len(lineBytes) > 0 {
 			lines = append(lines, string(lineBytes))
 			lineBytes = []byte{}
 		}
 	}
 
 	reverseStrings(lines)
-	for i := range lines {
-		if i != len(lines)-1 || isLastByteLineBreak {
-			lines[i] += "\n"
-		}
-	}
 	return lines, nil
 }
 
