@@ -11,7 +11,7 @@ const (
 	defaultTailBufferSize = 4096
 )
 
-// tail -n lines (默认忽略末尾换行符)
+// tail -n lines (包括行末尾换行符)
 func Tail(filename string, n int) (lines []string, err error) {
 	if n <= 0 {
 		return nil, nil
@@ -32,16 +32,6 @@ func Tail(filename string, n int) (lines []string, err error) {
 	if offsetEnd == 0 {
 		return nil, nil
 	}
-	if offsetEnd > 0 {
-		tmp := make([]byte, 1)
-		num, err := f.ReadAt(tmp, offsetEnd-1)
-		if err != nil {
-			return nil, err
-		}
-		if num > 0 && tmp[0] == '\n' {
-			offsetEnd--
-		}
-	}
 
 	lineNum := 0
 	var lineBytes []byte
@@ -57,15 +47,27 @@ func Tail(filename string, n int) (lines []string, err error) {
 		if num == 0 {
 			break
 		}
-		if tmp[0] != '\n' {
+
+		isFirst := offset == offsetEnd-1
+		if tmp[0] != '\n' || isFirst {
 			lineBytes = append(lineBytes, tmp[0])
 		}
 		if tmp[0] == '\n' || offset == 0 {
+			if isFirst {
+				continue
+			}
 			lineNum++
 			reverseBytes(lineBytes)
 			lines = append(lines, string(lineBytes))
-			lineBytes = []byte{}
+			if tmp[0] == '\n' {
+				lineBytes = []byte{'\n'}
+			} else {
+				lineBytes = []byte{}
+			}
 		}
+	}
+	if len(lineBytes) > 0 && lineNum < n {
+		lines = append(lines, string(lineBytes))
 	}
 
 	reverseStrings(lines)
@@ -93,6 +95,7 @@ func TailV2WithBuf(filename string, n int, bufSize int) (lines []string, err err
 		_ = f.Close()
 	}()
 
+	isLastByteLineBreak := false
 	offsetEnd, err := f.Seek(0, io.SeekEnd)
 	if err != nil {
 		return nil, err
@@ -107,6 +110,7 @@ func TailV2WithBuf(filename string, n int, bufSize int) (lines []string, err err
 			return nil, err
 		}
 		if num > 0 && tmp[0] == '\n' {
+			isLastByteLineBreak = true
 			offsetEnd--
 		}
 	}
@@ -158,10 +162,15 @@ func TailV2WithBuf(filename string, n int, bufSize int) (lines []string, err err
 	}
 
 	reverseStrings(lines)
+	for i := range lines {
+		if i != len(lines)-1 || isLastByteLineBreak {
+			lines[i] += "\n"
+		}
+	}
 	return lines, nil
 }
 
-// tail -c bytes (默认忽略末尾换行符)
+// tail -c bytes (包括行末尾换行符)
 func TailBytes(filename string, n int) ([]byte, error) {
 	if n <= 0 {
 		return nil, nil
@@ -181,16 +190,6 @@ func TailBytes(filename string, n int) ([]byte, error) {
 	}
 	if offsetEnd == 0 {
 		return nil, nil
-	}
-	if offsetEnd > 0 {
-		tmp := make([]byte, 1)
-		num, err := f.ReadAt(tmp, offsetEnd-1)
-		if err != nil {
-			return nil, err
-		}
-		if num > 0 && tmp[0] == '\n' {
-			offsetEnd--
-		}
 	}
 
 	size := int64(n)
