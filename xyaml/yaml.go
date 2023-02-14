@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/go-yaml/yaml"
+	"gopkg.in/yaml.v2"
 )
 
 // load file to yaml
